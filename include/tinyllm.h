@@ -3,4 +3,10 @@
 
 #include <stdint.h>
 
+// model configuration
+typedef struct {
+    int dim;        // transformer dimension
+    int hidden_dim; // ffn hidden dimension
+} Config;
+
 #endif
