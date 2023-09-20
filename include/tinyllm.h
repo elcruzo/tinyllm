@@ -14,4 +14,9 @@ typedef struct {
     int seq_len;    // max sequence length
 } Config;
 
+// model weights
+typedef struct {
+    float* token_embedding; // (vocab_size, dim)
+} Weights;
+
 #endif
