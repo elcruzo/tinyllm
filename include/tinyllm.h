@@ -17,6 +17,8 @@ typedef struct {
 // model weights
 typedef struct {
     float* token_embedding; // (vocab_size, dim)
+    float* rms_att_weight;  // (n_layers, dim)
+    float* rms_ffn_weight;  // (n_layers, dim)
 } Weights;
 
 #endif
