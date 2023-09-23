@@ -19,6 +19,11 @@ typedef struct {
     float* token_embedding; // (vocab_size, dim)
     float* rms_att_weight;  // (n_layers, dim)
     float* rms_ffn_weight;  // (n_layers, dim)
+    // attention weights
+    float* wq; // (n_layers, dim, n_heads * head_dim)
+    float* wk; // (n_layers, dim, n_kv_heads * head_dim)
+    float* wv; // (n_layers, dim, n_kv_heads * head_dim)
+    float* wo; // (n_layers, n_heads * head_dim, dim)
 } Weights;
 
 #endif
