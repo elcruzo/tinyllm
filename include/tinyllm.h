@@ -24,6 +24,10 @@ typedef struct {
     float* wk; // (n_layers, dim, n_kv_heads * head_dim)
     float* wv; // (n_layers, dim, n_kv_heads * head_dim)
     float* wo; // (n_layers, n_heads * head_dim, dim)
+    // ffn weights
+    float* w1; // (n_layers, hidden_dim, dim)
+    float* w2; // (n_layers, dim, hidden_dim)
+    float* w3; // (n_layers, hidden_dim, dim)
 } Weights;
 
 #endif
