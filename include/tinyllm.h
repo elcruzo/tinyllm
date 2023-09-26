@@ -28,6 +28,9 @@ typedef struct {
     float* w1; // (n_layers, hidden_dim, dim)
     float* w2; // (n_layers, dim, hidden_dim)
     float* w3; // (n_layers, hidden_dim, dim)
+    // final rmsnorm and classifier
+    float* rms_final_weight; // (dim,)
+    float* wcls;             // (vocab_size, dim) - output classifier
 } Weights;
 
 #endif
