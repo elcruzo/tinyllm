@@ -33,4 +33,10 @@ typedef struct {
     float* wcls;             // (vocab_size, dim) - output classifier
 } Weights;
 
+// runtime state during inference
+typedef struct {
+    float* x;      // activation at current position (dim,)
+    float* xb;     // same, but inside residual branch (dim,)
+} RunState;
+
 #endif
