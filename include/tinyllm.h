@@ -37,6 +37,9 @@ typedef struct {
 typedef struct {
     float* x;      // activation at current position (dim,)
     float* xb;     // same, but inside residual branch (dim,)
+    float* xb2;    // additional buffer for ffn residual (dim,)
+    float* hb;     // buffer for hidden dim in ffn (hidden_dim,)
+    float* hb2;    // buffer for hidden dim in ffn (hidden_dim,)
 } RunState;
 
 #endif
