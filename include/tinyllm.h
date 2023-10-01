@@ -40,6 +40,10 @@ typedef struct {
     float* xb2;    // additional buffer for ffn residual (dim,)
     float* hb;     // buffer for hidden dim in ffn (hidden_dim,)
     float* hb2;    // buffer for hidden dim in ffn (hidden_dim,)
+    float* q;      // query vector (dim,)
+    float* k;      // key vector (kv_dim,)
+    float* v;      // value vector (kv_dim,)
+    float* att;    // attention scores (n_heads, seq_len)
 } RunState;
 
 #endif
