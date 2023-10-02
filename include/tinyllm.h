@@ -44,6 +44,10 @@ typedef struct {
     float* k;      // key vector (kv_dim,)
     float* v;      // value vector (kv_dim,)
     float* att;    // attention scores (n_heads, seq_len)
+    float* logits; // output logits (vocab_size,)
+    // kv cache
+    float* key_cache;   // (n_layers, seq_len, kv_dim)
+    float* value_cache; // (n_layers, seq_len, kv_dim)
 } RunState;
 
 #endif
