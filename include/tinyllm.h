@@ -50,4 +50,7 @@ typedef struct {
     float* value_cache; // (n_layers, seq_len, kv_dim)
 } RunState;
 
+// function declarations
+void rmsnorm(float* o, float* x, float* weight, int size);
+
 #endif
