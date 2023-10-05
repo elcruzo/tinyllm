@@ -52,5 +52,7 @@ typedef struct {
 
 // function declarations
 void rmsnorm(float* o, float* x, float* weight, int size);
+void softmax(float* x, int size);
+void matmul(float* xout, float* x, float* w, int n, int d);
 
 #endif
