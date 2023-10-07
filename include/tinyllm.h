@@ -54,5 +54,6 @@ typedef struct {
 void rmsnorm(float* o, float* x, float* weight, int size);
 void softmax(float* x, int size);
 void matmul(float* xout, float* x, float* w, int n, int d);
+float* forward(Config* config, Weights* weights, RunState* state, int token, int pos);
 
 #endif
