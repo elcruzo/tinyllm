@@ -55,5 +55,7 @@ void rmsnorm(float* o, float* x, float* weight, int size);
 void softmax(float* x, int size);
 void matmul(float* xout, float* x, float* w, int n, int d);
 float* forward(Config* config, Weights* weights, RunState* state, int token, int pos);
+int argmax(float* v, int n);
+int sample_topp(float* probs, int n, float topp, unsigned long long* rng_state);
 
 #endif
