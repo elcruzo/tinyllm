@@ -18,3 +18,14 @@ void rmsnorm(float* o, float* x, float* weight, int size) {
         o[j] = weight[j] * (ss * x[j]);
     }
 }
+
+// softmax function for attention scores
+void softmax(float* x, int size) {
+    // find max for numerical stability
+    float max_val = x[0];
+    for (int i = 1; i < size; i++) {
+        if (x[i] > max_val) {
+            max_val = x[i];
+        }
+    }
+}
