@@ -39,3 +39,14 @@ void softmax(float* x, int size) {
         x[i] /= sum;
     }
 }
+
+// matrix multiplication: W (d,n) @ x (n,) -> xout (d,)
+void matmul(float* xout, float* x, float* w, int n, int d) {
+    for (int i = 0; i < d; i++) {
+        float val = 0.0f;
+        for (int j = 0; j < n; j++) {
+            val += w[i * n + j] * x[j];
+        }
+        xout[i] = val;
+    }
+}
