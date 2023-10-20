@@ -50,3 +50,19 @@ void matmul(float* xout, float* x, float* w, int n, int d) {
         xout[i] = val;
     }
 }
+
+// apply rotary position embedding to q and k vectors
+void rope(float* q, float* k, int dim, int head_dim, int pos) {
+    for (int i = 0; i < dim; i += 2) {
+        int head_i = i % head_dim;
+        float freq = 1.0f / powf(10000.0f, head_i / (float)head_dim);
+        float val = pos * freq;
+        float fcr = cosf(val);
+        float fci = sinf(val);
+        // rotate q
+        float q0 = q[i];
+        float q1 = q[i + 1];
+        q[i]     = q0 * fcr - q1 * fci;
+        q[i + 1] = q0 * fci + q1 * fcr;
+    }
+}
