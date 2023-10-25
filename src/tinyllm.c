@@ -73,3 +73,16 @@ void rope(float* q, float* k, int dim, int kv_dim, int head_dim, int pos) {
         }
     }
 }
+
+// argmax sampling - returns index of max value
+int argmax(float* v, int n) {
+    int max_i = 0;
+    float max_val = v[0];
+    for (int i = 1; i < n; i++) {
+        if (v[i] > max_val) {
+            max_val = v[i];
+            max_i = i;
+        }
+    }
+    return max_i;
+}
