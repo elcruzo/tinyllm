@@ -86,3 +86,15 @@ int argmax(float* v, int n) {
     }
     return max_i;
 }
+
+// random number generator (xorshift)
+unsigned long long rng_seed(unsigned long long seed) {
+    return seed ^ (seed >> 33);
+}
+
+float random_f32(unsigned long long* state) {
+    *state ^= *state >> 12;
+    *state ^= *state << 25;
+    *state ^= *state >> 27;
+    return (*state * 0x2545F4914F6CDD1Dull) / (float)0xFFFFFFFFFFFFFFFFull;
+}
