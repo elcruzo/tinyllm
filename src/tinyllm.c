@@ -98,3 +98,23 @@ float random_f32(unsigned long long* state) {
     *state ^= *state >> 27;
     return (*state * 0x2545F4914F6CDD1Dull) / (float)0xFFFFFFFFFFFFFFFFull;
 }
+
+// top-p (nucleus) sampling
+int sample_topp(float* probs, int n, float topp, unsigned long long* rng_state) {
+    // sort probabilities in descending order (simple bubble sort for small n)
+    int* indices = malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) indices[i] = i;
+    
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (probs[indices[j]] < probs[indices[j + 1]]) {
+                int tmp = indices[j];
+                indices[j] = indices[j + 1];
+                indices[j + 1] = tmp;
+            }
+        }
+    }
+    
+    free(indices);
+    return 0;
+}
