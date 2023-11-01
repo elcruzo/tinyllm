@@ -115,6 +115,30 @@ int sample_topp(float* probs, int n, float topp, unsigned long long* rng_state) 
         }
     }
     
+    // find cutoff index where cumulative prob exceeds topp
+    float cumulative = 0.0f;
+    int cutoff = n - 1;
+    for (int i = 0; i < n; i++) {
+        cumulative += probs[indices[i]];
+        if (cumulative > topp) {
+            cutoff = i;
+            break;
+        }
+    }
+    
+    // sample from truncated distribution
+    float r = random_f32(rng_state) * cumulative;
+    float cdf = 0.0f;
+    for (int i = 0; i <= cutoff; i++) {
+        cdf += probs[indices[i]];
+        if (r < cdf) {
+            int result = indices[i];
+            free(indices);
+            return result;
+        }
+    }
+    
+    int result = indices[cutoff];
     free(indices);
-    return 0;
+    return result;
 }
