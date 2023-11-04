@@ -142,3 +142,20 @@ int sample_topp(float* probs, int n, float topp, unsigned long long* rng_state) 
     free(indices);
     return result;
 }
+
+// allocate memory for RunState buffers
+void malloc_run_state(RunState* s, Config* p) {
+    int kv_dim = (p->dim * p->n_kv_heads) / p->n_heads;
+    s->x = calloc(p->dim, sizeof(float));
+    s->xb = calloc(p->dim, sizeof(float));
+    s->xb2 = calloc(p->dim, sizeof(float));
+    s->hb = calloc(p->hidden_dim, sizeof(float));
+    s->hb2 = calloc(p->hidden_dim, sizeof(float));
+    s->q = calloc(p->dim, sizeof(float));
+    s->k = calloc(kv_dim, sizeof(float));
+    s->v = calloc(kv_dim, sizeof(float));
+    s->att = calloc(p->n_heads * p->seq_len, sizeof(float));
+    s->logits = calloc(p->vocab_size, sizeof(float));
+    s->key_cache = calloc(p->n_layers * p->seq_len * kv_dim, sizeof(float));
+    s->value_cache = calloc(p->n_layers * p->seq_len * kv_dim, sizeof(float));
+}
