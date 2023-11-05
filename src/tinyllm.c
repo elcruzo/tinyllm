@@ -159,3 +159,19 @@ void malloc_run_state(RunState* s, Config* p) {
     s->key_cache = calloc(p->n_layers * p->seq_len * kv_dim, sizeof(float));
     s->value_cache = calloc(p->n_layers * p->seq_len * kv_dim, sizeof(float));
 }
+
+// free RunState memory
+void free_run_state(RunState* s) {
+    free(s->x);
+    free(s->xb);
+    free(s->xb2);
+    free(s->hb);
+    free(s->hb2);
+    free(s->q);
+    free(s->k);
+    free(s->v);
+    free(s->att);
+    free(s->logits);
+    free(s->key_cache);
+    free(s->value_cache);
+}
