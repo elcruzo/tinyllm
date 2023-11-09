@@ -175,3 +175,21 @@ void free_run_state(RunState* s) {
     free(s->key_cache);
     free(s->value_cache);
 }
+
+// forward pass for one token
+float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
+    // convenience variables
+    int dim = p->dim;
+    int hidden_dim = p->hidden_dim;
+    int head_dim = dim / p->n_heads;
+    int kv_dim = (dim * p->n_kv_heads) / p->n_heads;
+    int kv_mul = p->n_heads / p->n_kv_heads;
+    
+    // copy token embedding into x
+    float* content_row = w->token_embedding + token * dim;
+    for (int i = 0; i < dim; i++) {
+        s->x[i] = content_row[i];
+    }
+    
+    return s->logits;
+}
