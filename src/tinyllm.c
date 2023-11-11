@@ -191,5 +191,16 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
         s->x[i] = content_row[i];
     }
     
+    // iterate over all transformer layers
+    for (int l = 0; l < p->n_layers; l++) {
+        // attention rmsnorm
+        rmsnorm(s->xb, s->x, w->rms_att_weight + l * dim, dim);
+        
+        // compute q, k, v projections
+        matmul(s->q, s->xb, w->wq + l * dim * dim, dim, dim);
+        matmul(s->k, s->xb, w->wk + l * dim * kv_dim, dim, kv_dim);
+        matmul(s->v, s->xb, w->wv + l * dim * kv_dim, dim, kv_dim);
+    }
+    
     return s->logits;
 }
