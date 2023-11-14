@@ -200,6 +200,18 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
         matmul(s->q, s->xb, w->wq + l * dim * dim, dim, dim);
         matmul(s->k, s->xb, w->wk + l * dim * kv_dim, dim, kv_dim);
         matmul(s->v, s->xb, w->wv + l * dim * kv_dim, dim, kv_dim);
+        
+        // apply rotary position embedding
+        rope(s->q, s->k, dim, kv_dim, head_dim, pos);
+        
+        // cache k and v for this position
+        int loff = l * p->seq_len * kv_dim;
+        float* key_cache_row = s->key_cache + loff + pos * kv_dim;
+        float* value_cache_row = s->value_cache + loff + pos * kv_dim;
+        for (int i = 0; i < kv_dim; i++) {
+            key_cache_row[i] = s->k[i];
+            value_cache_row[i] = s->v[i];
+        }
     }
     
     return s->logits;
