@@ -212,6 +212,26 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
             key_cache_row[i] = s->k[i];
             value_cache_row[i] = s->v[i];
         }
+        
+        // multihead attention
+        for (int h = 0; h < p->n_heads; h++) {
+            // get query vector for this head
+            float* q = s->q + h * head_dim;
+            // attention scores for this head
+            float* att = s->att + h * p->seq_len;
+            // iterate over all timesteps including current
+            for (int t = 0; t <= pos; t++) {
+                // get key vector for this head at timestep t
+                float* k = s->key_cache + loff + t * kv_dim + (h / kv_mul) * head_dim;
+                // dot product q . k
+                float score = 0.0f;
+                for (int i = 0; i < head_dim; i++) {
+                    score += q[i] * k[i];
+                }
+                score /= sqrtf(head_dim);
+                att[t] = score;
+            }
+        }
     }
     
     return s->logits;
