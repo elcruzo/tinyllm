@@ -231,6 +231,20 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
                 score /= sqrtf(head_dim);
                 att[t] = score;
             }
+            
+            // softmax attention scores
+            softmax(att, pos + 1);
+            
+            // weighted sum of values
+            float* xb = s->xb + h * head_dim;
+            for (int i = 0; i < head_dim; i++) xb[i] = 0.0f;
+            for (int t = 0; t <= pos; t++) {
+                float* v = s->value_cache + loff + t * kv_dim + (h / kv_mul) * head_dim;
+                float a = att[t];
+                for (int i = 0; i < head_dim; i++) {
+                    xb[i] += a * v[i];
+                }
+            }
         }
     }
     
