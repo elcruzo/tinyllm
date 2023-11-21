@@ -246,6 +246,14 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
                 }
             }
         }
+        
+        // output projection
+        matmul(s->xb2, s->xb, w->wo + l * dim * dim, dim, dim);
+        
+        // residual connection
+        for (int i = 0; i < dim; i++) {
+            s->x[i] += s->xb2[i];
+        }
     }
     
     return s->logits;
