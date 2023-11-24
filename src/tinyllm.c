@@ -254,6 +254,13 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
         for (int i = 0; i < dim; i++) {
             s->x[i] += s->xb2[i];
         }
+        
+        // ffn rmsnorm
+        rmsnorm(s->xb, s->x, w->rms_ffn_weight + l * dim, dim);
+        
+        // ffn: w1 and w3 projections (SwiGLU)
+        matmul(s->hb, s->xb, w->w1 + l * dim * hidden_dim, dim, hidden_dim);
+        matmul(s->hb2, s->xb, w->w3 + l * dim * hidden_dim, dim, hidden_dim);
     }
     
     return s->logits;
