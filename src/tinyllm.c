@@ -261,6 +261,22 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
         // ffn: w1 and w3 projections (SwiGLU)
         matmul(s->hb, s->xb, w->w1 + l * dim * hidden_dim, dim, hidden_dim);
         matmul(s->hb2, s->xb, w->w3 + l * dim * hidden_dim, dim, hidden_dim);
+        
+        // SwiGLU activation: silu(w1(x)) * w3(x)
+        for (int i = 0; i < hidden_dim; i++) {
+            float val = s->hb[i];
+            // silu(x) = x * sigmoid(x)
+            val *= (1.0f / (1.0f + expf(-val)));
+            s->hb[i] = val * s->hb2[i];
+        }
+        
+        // w2 projection (down projection)
+        matmul(s->xb, s->hb, w->w2 + l * hidden_dim * dim, hidden_dim, dim);
+        
+        // ffn residual connection
+        for (int i = 0; i < dim; i++) {
+            s->x[i] += s->xb[i];
+        }
     }
     
     return s->logits;
