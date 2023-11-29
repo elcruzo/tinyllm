@@ -279,5 +279,11 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
         }
     }
     
+    // final rmsnorm
+    rmsnorm(s->x, s->x, w->rms_final_weight, dim);
+    
+    // classifier into logits
+    matmul(s->logits, s->x, w->wcls, dim, p->vocab_size);
+    
     return s->logits;
 }
