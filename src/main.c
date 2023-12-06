@@ -19,5 +19,20 @@ int main(int argc, char** argv) {
     
     model_path = argv[1];
     
+    // parse optional arguments
+    for (int i = 2; i < argc; i++) {
+        if (argv[i][0] == '-') {
+            if (argv[i][1] == 't' && i + 1 < argc) {
+                temperature = atof(argv[++i]);
+            } else if (argv[i][1] == 'p' && i + 1 < argc) {
+                topp = atof(argv[++i]);
+            } else if (argv[i][1] == 'n' && i + 1 < argc) {
+                steps = atoi(argv[++i]);
+            }
+        } else if (prompt == NULL) {
+            prompt = argv[i];
+        }
+    }
+    
     return 0;
 }
