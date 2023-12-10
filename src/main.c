@@ -34,5 +34,25 @@ int main(int argc, char** argv) {
         }
     }
     
+    // load model file
+    FILE* file = fopen(model_path, "rb");
+    if (!file) {
+        printf("error: couldn't open model file %s\n", model_path);
+        return 1;
+    }
+    
+    // read config
+    Config config;
+    if (fread(&config, sizeof(Config), 1, file) != 1) {
+        printf("error: failed to read config\n");
+        fclose(file);
+        return 1;
+    }
+    
+    printf("model: dim=%d, layers=%d, heads=%d, vocab=%d\n",
+           config.dim, config.n_layers, config.n_heads, config.vocab_size);
+    
+    fclose(file);
+    
     return 0;
 }
