@@ -52,6 +52,19 @@ int main(int argc, char** argv) {
     printf("model: dim=%d, layers=%d, heads=%d, vocab=%d\n",
            config.dim, config.n_layers, config.n_heads, config.vocab_size);
     
+    // allocate weights
+    Weights weights;
+    int head_dim = config.dim / config.n_heads;
+    int kv_dim = (config.dim * config.n_kv_heads) / config.n_heads;
+    
+    weights.token_embedding = malloc(config.vocab_size * config.dim * sizeof(float));
+    weights.rms_att_weight = malloc(config.n_layers * config.dim * sizeof(float));
+    weights.rms_ffn_weight = malloc(config.n_layers * config.dim * sizeof(float));
+    weights.wq = malloc(config.n_layers * config.dim * config.dim * sizeof(float));
+    weights.wk = malloc(config.n_layers * config.dim * kv_dim * sizeof(float));
+    weights.wv = malloc(config.n_layers * config.dim * kv_dim * sizeof(float));
+    weights.wo = malloc(config.n_layers * config.dim * config.dim * sizeof(float));
+    
     fclose(file);
     
     return 0;
