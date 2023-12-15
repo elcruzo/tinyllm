@@ -64,6 +64,15 @@ int main(int argc, char** argv) {
     weights.wk = malloc(config.n_layers * config.dim * kv_dim * sizeof(float));
     weights.wv = malloc(config.n_layers * config.dim * kv_dim * sizeof(float));
     weights.wo = malloc(config.n_layers * config.dim * config.dim * sizeof(float));
+    weights.w1 = malloc(config.n_layers * config.hidden_dim * config.dim * sizeof(float));
+    weights.w2 = malloc(config.n_layers * config.dim * config.hidden_dim * sizeof(float));
+    weights.w3 = malloc(config.n_layers * config.hidden_dim * config.dim * sizeof(float));
+    weights.rms_final_weight = malloc(config.dim * sizeof(float));
+    weights.wcls = malloc(config.vocab_size * config.dim * sizeof(float));
+    
+    // allocate run state
+    RunState state;
+    malloc_run_state(&state, &config);
     
     fclose(file);
     
