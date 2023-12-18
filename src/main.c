@@ -74,6 +74,20 @@ int main(int argc, char** argv) {
     RunState state;
     malloc_run_state(&state, &config);
     
+    // simple tokenization (just use token ids directly for now)
+    int* prompt_tokens = NULL;
+    int num_prompt_tokens = 0;
+    if (prompt != NULL) {
+        // for simplicity, assume prompt is space-separated token ids
+        // real implementation would use a proper tokenizer
+        prompt_tokens = malloc(strlen(prompt) * sizeof(int));
+        char* token = strtok(prompt, " ");
+        while (token != NULL) {
+            prompt_tokens[num_prompt_tokens++] = atoi(token);
+            token = strtok(NULL, " ");
+        }
+    }
+    
     fclose(file);
     
     return 0;
