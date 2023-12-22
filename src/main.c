@@ -88,6 +88,43 @@ int main(int argc, char** argv) {
         }
     }
     
+    // generation loop
+    unsigned long long rng_state = 12345;
+    int token = 1; // start with BOS token
+    int pos = 0;
+    
+    while (pos < steps) {
+        // forward pass
+        float* logits = forward(&config, &weights, &state, token, pos);
+        
+        // determine next token
+        int next;
+        if (pos < num_prompt_tokens) {
+            // still in prompt, use prompt token
+            next = prompt_tokens[pos];
+        } else {
+            // sample from logits
+            if (temperature == 0.0f) {
+                next = argmax(logits, config.vocab_size);
+            } else {
+                // apply temperature
+                for (int i = 0; i < config.vocab_size; i++) {
+                    logits[i] /= temperature;
+                }
+                softmax(logits, config.vocab_size);
+                next = sample_topp(logits, config.vocab_size, topp, &rng_state);
+            }
+        }
+        
+        pos++;
+        token = next;
+        
+        // output token (just print id for now)
+        printf("%d ", token);
+        fflush(stdout);
+    }
+    printf("\n");
+    
     fclose(file);
     
     return 0;
