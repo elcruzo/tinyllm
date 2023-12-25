@@ -125,6 +125,22 @@ int main(int argc, char** argv) {
     }
     printf("\n");
     
+    // cleanup
+    free_run_state(&state);
+    if (prompt_tokens) free(prompt_tokens);
+    free(weights.token_embedding);
+    free(weights.rms_att_weight);
+    free(weights.rms_ffn_weight);
+    free(weights.wq);
+    free(weights.wk);
+    free(weights.wv);
+    free(weights.wo);
+    free(weights.w1);
+    free(weights.w2);
+    free(weights.w3);
+    free(weights.rms_final_weight);
+    free(weights.wcls);
+    
     fclose(file);
     
     return 0;
