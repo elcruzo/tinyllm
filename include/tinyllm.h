@@ -54,8 +54,11 @@ typedef struct {
 void rmsnorm(float* o, float* x, float* weight, int size);
 void softmax(float* x, int size);
 void matmul(float* xout, float* x, float* w, int n, int d);
+void rope(float* q, float* k, int dim, int kv_dim, int head_dim, int pos);
 float* forward(Config* config, Weights* weights, RunState* state, int token, int pos);
 int argmax(float* v, int n);
 int sample_topp(float* probs, int n, float topp, unsigned long long* rng_state);
+void malloc_run_state(RunState* s, Config* p);
+void free_run_state(RunState* s);
 
 #endif
