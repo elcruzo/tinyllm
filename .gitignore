@@ -1,0 +1,11 @@
+# build artifacts
+tinyllm
+*.o
+
+# model files
+*.bin
+
+# editor
+.vscode/
+*.swp
+*~
