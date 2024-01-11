@@ -10,5 +10,10 @@ all: $(TARGET)
 $(TARGET): $(SRC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
+debug: CFLAGS = -Wall -g -O0
+debug: $(TARGET)
+
 clean:
 	rm -f $(TARGET)
+
+.PHONY: all clean debug
