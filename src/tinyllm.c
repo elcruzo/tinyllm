@@ -158,6 +158,13 @@ void malloc_run_state(RunState* s, Config* p) {
     s->logits = calloc(p->vocab_size, sizeof(float));
     s->key_cache = calloc(p->n_layers * p->seq_len * kv_dim, sizeof(float));
     s->value_cache = calloc(p->n_layers * p->seq_len * kv_dim, sizeof(float));
+    
+    // check allocations
+    if (!s->x || !s->xb || !s->xb2 || !s->hb || !s->hb2 || !s->q ||
+        !s->k || !s->v || !s->att || !s->logits || !s->key_cache || !s->value_cache) {
+        fprintf(stderr, "error: memory allocation failed\n");
+        exit(1);
+    }
 }
 
 // free RunState memory
