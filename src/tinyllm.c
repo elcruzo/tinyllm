@@ -103,6 +103,8 @@ float random_f32(unsigned long long* state) {
 int sample_topp(float* probs, int n, float topp, unsigned long long* rng_state) {
     // sort probabilities in descending order (simple bubble sort for small n)
     int* indices = malloc(n * sizeof(int));
+    if (!indices) return 0;
+    
     for (int i = 0; i < n; i++) indices[i] = i;
     
     for (int i = 0; i < n - 1; i++) {
