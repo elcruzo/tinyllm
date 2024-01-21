@@ -194,6 +194,12 @@ float* forward(Config* p, Weights* w, RunState* s, int token, int pos) {
     int kv_dim = (dim * p->n_kv_heads) / p->n_heads;
     int kv_mul = p->n_heads / p->n_kv_heads;
     
+    // bounds check
+    if (token < 0 || token >= p->vocab_size) {
+        fprintf(stderr, "error: token %d out of range [0, %d)\n", token, p->vocab_size);
+        return NULL;
+    }
+    
     // copy token embedding into x
     float* content_row = w->token_embedding + token * dim;
     for (int i = 0; i < dim; i++) {
