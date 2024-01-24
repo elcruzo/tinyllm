@@ -122,6 +122,9 @@ int main(int argc, char** argv) {
         // output token (just print id for now)
         printf("%d ", token);
         fflush(stdout);
+        
+        // check for EOS token (typically 2)
+        if (token == 2) break;
     }
     printf("\n");
     
