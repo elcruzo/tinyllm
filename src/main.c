@@ -93,6 +93,8 @@ int main(int argc, char** argv) {
     int token = 1; // start with BOS token
     int pos = 0;
     
+    printf("generating %d tokens...\n", steps);
+    
     while (pos < steps) {
         // forward pass
         float* logits = forward(&config, &weights, &state, token, pos);
