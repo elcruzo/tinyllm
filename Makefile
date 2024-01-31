@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -O3 -march=native
+CFLAGS = -Wall -O3 -march=native -ffast-math
 LDFLAGS = -lm
 
 SRC = src/main.c src/tinyllm.c
