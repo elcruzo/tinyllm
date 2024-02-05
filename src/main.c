@@ -1,152 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "../include/tinyllm.h"
+#include "../include/tokenizer.h"
 
-int main(int argc, char** argv) {
-    // default parameters
-    char* model_path = NULL;
-    char* prompt = NULL;
-    float temperature = 1.0f;
-    float topp = 0.9f;
+int main(int argc, char **argv) {
+    char *model = NULL, *tokenizer_path = "tokenizer.bin", *prompt = NULL;
+    float temp = 1.0f, topp = 0.9f;
     int steps = 256;
+    unsigned long long seed = 0;
     
-    // parse arguments
-    if (argc < 2) {
-        printf("usage: %s <model> [prompt] [-t temp] [-p topp] [-n steps]\n", argv[0]);
-        return 1;
-    }
-    
-    model_path = argv[1];
-    
-    // parse optional arguments
+    if (argc < 2) { printf("usage: %s <model.bin> [prompt] [-t temp] [-p topp] [-n steps]\n", argv[0]); return 1; }
+    model = argv[1];
     for (int i = 2; i < argc; i++) {
         if (argv[i][0] == '-') {
-            if (argv[i][1] == 't' && i + 1 < argc) {
-                temperature = atof(argv[++i]);
-            } else if (argv[i][1] == 'p' && i + 1 < argc) {
-                topp = atof(argv[++i]);
-            } else if (argv[i][1] == 'n' && i + 1 < argc) {
-                steps = atoi(argv[++i]);
-            }
-        } else if (prompt == NULL) {
-            prompt = argv[i];
-        }
+            if (argv[i][1] == 't') temp = atof(argv[++i]);
+            else if (argv[i][1] == 'p') topp = atof(argv[++i]);
+            else if (argv[i][1] == 'n') steps = atoi(argv[++i]);
+            else if (argv[i][1] == 's') seed = atoll(argv[++i]);
+            else if (argv[i][1] == 'z') tokenizer_path = argv[++i];
+        } else if (!prompt) prompt = argv[i];
     }
+    if (!seed) seed = time(NULL);
     
-    // load model file
-    FILE* file = fopen(model_path, "rb");
-    if (!file) {
-        printf("error: couldn't open model file %s\n", model_path);
-        return 1;
-    }
+    FILE *f = fopen(model, "rb");
+    if (!f) { printf("can't open %s\n", model); return 1; }
     
-    // read config
-    Config config;
-    if (fread(&config, sizeof(Config), 1, file) != 1) {
-        printf("error: failed to read config\n");
-        fclose(file);
-        return 1;
-    }
+    Config cfg;
+    fread(&cfg, sizeof(Config), 1, f);
+    int shared = cfg.vocab_size > 0;
+    cfg.vocab_size = abs(cfg.vocab_size);
     
-    printf("model: dim=%d, layers=%d, heads=%d, vocab=%d\n",
-           config.dim, config.n_layers, config.n_heads, config.vocab_size);
+    int kv = (cfg.dim * cfg.n_kv_heads) / cfg.n_heads;
+    Weights w;
+    w.token_embedding = malloc(cfg.vocab_size * cfg.dim * sizeof(float));
+    w.rms_att_weight = malloc(cfg.n_layers * cfg.dim * sizeof(float));
+    w.rms_ffn_weight = malloc(cfg.n_layers * cfg.dim * sizeof(float));
+    w.wq = malloc(cfg.n_layers * cfg.dim * cfg.dim * sizeof(float));
+    w.wk = malloc(cfg.n_layers * cfg.dim * kv * sizeof(float));
+    w.wv = malloc(cfg.n_layers * cfg.dim * kv * sizeof(float));
+    w.wo = malloc(cfg.n_layers * cfg.dim * cfg.dim * sizeof(float));
+    w.w1 = malloc(cfg.n_layers * cfg.hidden_dim * cfg.dim * sizeof(float));
+    w.w2 = malloc(cfg.n_layers * cfg.dim * cfg.hidden_dim * sizeof(float));
+    w.w3 = malloc(cfg.n_layers * cfg.hidden_dim * cfg.dim * sizeof(float));
+    w.rms_final_weight = malloc(cfg.dim * sizeof(float));
     
-    // allocate weights
-    Weights weights;
-    int head_dim = config.dim / config.n_heads;
-    int kv_dim = (config.dim * config.n_kv_heads) / config.n_heads;
+    fread(w.token_embedding, sizeof(float), cfg.vocab_size * cfg.dim, f);
+    fread(w.rms_att_weight, sizeof(float), cfg.n_layers * cfg.dim, f);
+    fread(w.wq, sizeof(float), cfg.n_layers * cfg.dim * cfg.dim, f);
+    fread(w.wk, sizeof(float), cfg.n_layers * cfg.dim * kv, f);
+    fread(w.wv, sizeof(float), cfg.n_layers * cfg.dim * kv, f);
+    fread(w.wo, sizeof(float), cfg.n_layers * cfg.dim * cfg.dim, f);
+    fread(w.rms_ffn_weight, sizeof(float), cfg.n_layers * cfg.dim, f);
+    fread(w.w1, sizeof(float), cfg.n_layers * cfg.hidden_dim * cfg.dim, f);
+    fread(w.w2, sizeof(float), cfg.n_layers * cfg.dim * cfg.hidden_dim, f);
+    fread(w.w3, sizeof(float), cfg.n_layers * cfg.hidden_dim * cfg.dim, f);
+    fread(w.rms_final_weight, sizeof(float), cfg.dim, f);
+    w.wcls = shared ? w.token_embedding : malloc(cfg.vocab_size * cfg.dim * sizeof(float));
+    if (!shared) fread(w.wcls, sizeof(float), cfg.vocab_size * cfg.dim, f);
+    fclose(f);
     
-    weights.token_embedding = malloc(config.vocab_size * config.dim * sizeof(float));
-    weights.rms_att_weight = malloc(config.n_layers * config.dim * sizeof(float));
-    weights.rms_ffn_weight = malloc(config.n_layers * config.dim * sizeof(float));
-    weights.wq = malloc(config.n_layers * config.dim * config.dim * sizeof(float));
-    weights.wk = malloc(config.n_layers * config.dim * kv_dim * sizeof(float));
-    weights.wv = malloc(config.n_layers * config.dim * kv_dim * sizeof(float));
-    weights.wo = malloc(config.n_layers * config.dim * config.dim * sizeof(float));
-    weights.w1 = malloc(config.n_layers * config.hidden_dim * config.dim * sizeof(float));
-    weights.w2 = malloc(config.n_layers * config.dim * config.hidden_dim * sizeof(float));
-    weights.w3 = malloc(config.n_layers * config.hidden_dim * config.dim * sizeof(float));
-    weights.rms_final_weight = malloc(config.dim * sizeof(float));
-    weights.wcls = malloc(config.vocab_size * config.dim * sizeof(float));
+    Tokenizer tok;
+    tokenizer_load(&tok, tokenizer_path, cfg.vocab_size);
     
-    // allocate run state
     RunState state;
-    malloc_run_state(&state, &config);
+    malloc_run_state(&state, &cfg);
     
-    // simple tokenization (just use token ids directly for now)
-    int* prompt_tokens = NULL;
-    int num_prompt_tokens = 0;
-    if (prompt != NULL) {
-        // for simplicity, assume prompt is space-separated token ids
-        // real implementation would use a proper tokenizer
-        prompt_tokens = malloc(strlen(prompt) * sizeof(int));
-        char* token = strtok(prompt, " ");
-        while (token != NULL) {
-            prompt_tokens[num_prompt_tokens++] = atoi(token);
-            token = strtok(NULL, " ");
-        }
+    int *toks = NULL, ntoks = 0;
+    if (prompt) {
+        toks = malloc((strlen(prompt) + 3) * sizeof(int));
+        tokenizer_encode(&tok, prompt, toks, &ntoks);
     }
     
-    // generation loop
-    unsigned long long rng_state = 12345;
-    int token = 1; // start with BOS token
-    int pos = 0;
-    
-    printf("generating %d tokens...\n", steps);
-    
-    while (pos < steps) {
-        // forward pass
-        float* logits = forward(&config, &weights, &state, token, pos);
-        
-        // determine next token
+    int token = 1, prev = 0;
+    for (int pos = 0; pos < steps; pos++) {
+        float *logits = forward(&cfg, &w, &state, token, pos);
         int next;
-        if (pos < num_prompt_tokens) {
-            // still in prompt, use prompt token
-            next = prompt_tokens[pos];
-        } else {
-            // sample from logits
-            if (temperature == 0.0f) {
-                next = argmax(logits, config.vocab_size);
-            } else {
-                // apply temperature
-                for (int i = 0; i < config.vocab_size; i++) {
-                    logits[i] /= temperature;
-                }
-                softmax(logits, config.vocab_size);
-                next = sample_topp(logits, config.vocab_size, topp, &rng_state);
+        if (pos < ntoks - 1) next = toks[pos + 1];
+        else {
+            if (temp == 0) next = argmax(logits, cfg.vocab_size);
+            else {
+                for (int i = 0; i < cfg.vocab_size; i++) logits[i] /= temp;
+                softmax(logits, cfg.vocab_size);
+                next = sample_topp(logits, cfg.vocab_size, topp, &seed);
             }
         }
-        
-        pos++;
-        token = next;
-        
-        // output token (just print id for now)
-        printf("%d ", token);
-        fflush(stdout);
-        
-        // check for EOS token (typically 2)
+        if (pos >= ntoks - 1) { printf("%s", tokenizer_decode(&tok, prev, next)); fflush(stdout); }
+        prev = token; token = next;
         if (token == 2) break;
     }
     printf("\n");
     
-    // cleanup
     free_run_state(&state);
-    if (prompt_tokens) free(prompt_tokens);
-    free(weights.token_embedding);
-    free(weights.rms_att_weight);
-    free(weights.rms_ffn_weight);
-    free(weights.wq);
-    free(weights.wk);
-    free(weights.wv);
-    free(weights.wo);
-    free(weights.w1);
-    free(weights.w2);
-    free(weights.w3);
-    free(weights.rms_final_weight);
-    free(weights.wcls);
-    
-    fclose(file);
-    
+    tokenizer_free(&tok);
+    if (toks) free(toks);
+    free(w.token_embedding); free(w.rms_att_weight); free(w.rms_ffn_weight);
+    free(w.wq); free(w.wk); free(w.wv); free(w.wo);
+    free(w.w1); free(w.w2); free(w.w3); free(w.rms_final_weight);
+    if (!shared) free(w.wcls);
     return 0;
 }

@@ -1,32 +1,30 @@
 # tinyllm
 
-minimal transformer inference in c. no frameworks.
+minimal transformer inference in c. ~400 lines total.
 
-runs small language models on cpu. ~500 lines.
+## quick start
 
-## build
-
-```
+```bash
 make
+./download.sh
+./tinyllm models/stories15M.bin "Once upon a time"
 ```
 
 ## usage
 
 ```
-./tinyllm model.bin [prompt] [-t temperature] [-p topp] [-n steps]
+./tinyllm <model.bin> [prompt] [-t temp] [-p topp] [-n steps] [-s seed] [-z tokenizer]
 ```
 
-## options
+## what it does
 
-- `-t`: temperature for sampling (default: 1.0)
-- `-p`: top-p nucleus sampling threshold (default: 0.9)
-- `-n`: number of tokens to generate (default: 256)
+runs llama-style models (tinyllamas, llama2.c format). implements:
+- rmsnorm
+- rotary position embeddings (rope)
+- grouped query attention (gqa)
+- swiglu ffn
+- kv cache
+- top-p sampling
+- bpe tokenizer
 
-## architecture
-
-implements a decoder-only transformer with:
-- RMSNorm (instead of LayerNorm)
-- Rotary Position Embeddings (RoPE)
-- SwiGLU activation in FFN
-- Grouped Query Attention (GQA) support
-- KV cache for efficient autoregressive generation
+no dependencies except libc and libm.

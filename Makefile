@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -O3 -march=native -ffast-math
 LDFLAGS = -lm
 
-SRC = src/main.c src/tinyllm.c
+SRC = src/main.c src/tinyllm.c src/tokenizer.c
 TARGET = tinyllm
 
 all: $(TARGET)
